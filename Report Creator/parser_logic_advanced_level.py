@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
-from functions import paper_grading, subject_grading_two_papers, subject_grading_three_papers, calculate_ICT_total, calc_total_points, abbreviate_column_name
+from functions_advanced_level import paper_grading, subject_grading_two_papers, subject_grading_three_papers, calculate_ICT_total, calc_total_points, abbreviate_column_name
 
 def subject_average_calculator(file_path:str, sheet_name:str, subject = '')-> tuple[int, pd.DataFrame]:
     try:
@@ -60,12 +60,10 @@ def iterate_through_subjects(subject_dir_path):
             subject_name = os.path.splitext(file_name)[0]
             parts = subject_name.split(' ')
             
-                            
             subject_name = parts[len(parts)-1]
             
-            
-            if("A'" not in parts):
-                raise NameError(f"The name of the file {file_name} is incorrect, it must include A' level to differentiate it from O level class")
+            # if("A'" not in parts):
+            #     raise NameError(f"The name of the file {file_name} is incorrect, it must include A' level to differentiate it from O level class")
             
             (student_number, subject_data_frame_senior_five) = subject_average_calculator(os.path.join(subject_dir_path, file_name), sheet_name='Senior Five', subject=subject_name)
             (student_number, subject_data_frame_senior_six) = subject_average_calculator(os.path.join(subject_dir_path, file_name), sheet_name='Senior Six', subject=subject_name)
@@ -81,7 +79,7 @@ def iterate_through_subjects(subject_dir_path):
     return parsed_subjects    
 
 
-def combine_subjects(parsed_subjects, ):
+def combine_subjects_to_report_format(parsed_subjects, report_type='STUDENT_REPORT'):
     """
     Combine subjects data for students in senior five and senior six classes.
 
@@ -95,6 +93,11 @@ def combine_subjects(parsed_subjects, ):
     Returns:
         dict: A dictionary containing the combined DataFrames for senior five and senior six.
     """
+    
+    report_types = ['STUDENT_REPORT', 'MARKS_SUMMARY']
+    
+    if report_type not in report_types:
+        raise ValueError(f'The report type {report_types} is not a valid report type')
     
     columns = [
         'Student ID', 
@@ -225,28 +228,32 @@ def combine_subjects(parsed_subjects, ):
             lambda row: calc_total_points(row['Subject 1 Grade'], row['Subject 2 Grade'], row['Subject 3 Grade'], row['Subsidiary Grade'], row['GP Grade']), axis=1
         )
     
-    with pd.ExcelWriter('combined_data_frames_fullname.xlsx') as writer:
+    if report_type == 'STUDENT_REPORT':
         for class_name, df in combined_data_frames.items():
-            df.to_excel(writer, sheet_name=class_name, index=False)
+            columns = df.columns
+            cols = {}
+            for i in columns:
+                cols.update({i: abbreviate_column_name(i)})
+            
+            df.rename(columns=cols, inplace=True)
     
-    for class_name, df in combined_data_frames.items():
-        columns = df.columns
-        cols = {}
-        for i in columns:
-            cols.update({i: abbreviate_column_name(i)})
-        
-        df.rename(columns=cols, inplace=True)
     return combined_data_frames
 
-
+def parse_advanced_level_marksheet(folder_path:str, report_type='STUDENT_REPORT'):
+    try:
+        parsed_subjects = iterate_through_subjects(folder_path)
+        combined_subjects = combine_subjects_to_report_format(parsed_subjects=parsed_subjects, report_type=report_type)
+        return combined_subjects
+    except Exception as e:
+        raise e
 
 
 if __name__ == '__main__':
-    parsed_subjects = iterate_through_subjects('./test_subjects')
-    combined_subjects = combine_subjects(parsed_subjects=parsed_subjects)
+    parsed_subjects = iterate_through_subjects('./test_subjects/Marks Sheet A level')
+    combined_subjects = combine_subjects_to_report_format(parsed_subjects=parsed_subjects)
     
-    with pd.ExcelWriter('combined_data_frames.xlsx') as writer:
-        for class_name, df in combined_subjects.items():
-            df.to_excel(writer, sheet_name=class_name, index=False)
+    # with pd.ExcelWriter('combined_data_frames.xlsx') as writer:
+    #     for class_name, df in combined_subjects.items():
+    #         df.to_excel(writer, sheet_name=class_name, index=False)
     
     

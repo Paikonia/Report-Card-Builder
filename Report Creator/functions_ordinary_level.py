@@ -33,7 +33,10 @@ def calc_grading(total):
         return 'F'
     else:
         return 'G'
-
-
-if __name__ == '__main__':
-    pass
+    
+def abbreviate_column_name(column_name):
+    column_name = column_name.replace('Formative Score', 'fs')
+    column_name = column_name.replace('EOT Score', 'es')
+    column_name = column_name.replace('Total Score', 'to')
+    column_name = column_name.replace('Grade', 'grade')
+    return column_name.replace(' ', '_')
