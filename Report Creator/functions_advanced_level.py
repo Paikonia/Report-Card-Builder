@@ -9,11 +9,11 @@ def calc_total_points(subject_1_grade, subject_2_grade, subject_3_grade, subsidi
     
     for grade in [subject_1_grade, subject_2_grade, subject_3_grade]:
         if grade not in valid_grades:
-            raise ValueError(f"Unrecognized grading: {grade}")
+            raise ValueError(f"Unrecognized grading for principal subjects: {grade}")
     
     for grade in [subsidiary_grade, GP_grade]:
         if grade not in valid_sub_gp_grades:
-            raise ValueError(f"Unrecognized grading: {grade}")
+            raise ValueError(f"Unrecognized grading for Subsidiary subjects and General paper: {grade}")
     grades = [subject_1_grade, subject_2_grade, subject_3_grade, subsidiary_grade, GP_grade]
     if 'X' in grades:
         return 'X'
@@ -192,6 +192,7 @@ def abbreviate_column_name(column_name):
     column_name = column_name.replace('Grade', 'g')
     column_name = column_name.replace('Comment', 'c')
     column_name = column_name.replace('GP', 'gp')
+    column_name = column_name.replace('Name', 'name')
     column_name = column_name.replace('Subsidiary', 'sub')
     return column_name.replace(' ', '_')
 
