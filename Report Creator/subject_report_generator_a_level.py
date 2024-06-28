@@ -62,7 +62,7 @@ def make_subject_report_a_level(folder_path: str):
 
 
 if __name__ == '__main__':
-    data = make_subject_report_a_level('test_subjects/Marks Sheet A level')
+    data = make_subject_report_a_level('test_subjects/Marks Sheet Term II 2024/A level Marks Sheet Term II 2024')
     for i  in data:
         print(i)
         print(data[i])

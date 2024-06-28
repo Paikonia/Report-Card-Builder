@@ -1,151 +1,6 @@
 import numpy as np
 import pandas as pd
 
-
-def calc_total_points(subject_1_grade, subject_2_grade, subject_3_grade, subsidiary_grade, GP_grade):
-    valid_grades = {'A', 'B', 'C', 'D', 'E', 'O', 'F', 'D1', 'D2', 'C3', 'C4', 'C5', 'C6', 'P7', 'P8', 'F9', 'X'}
-    
-    valid_sub_gp_grades = {'D1', 'D2', 'C3', 'C4', 'C5', 'C6', 'P7', 'P8', 'F9', 'X'}
-    
-    for grade in [subject_1_grade, subject_2_grade, subject_3_grade]:
-        if grade not in valid_grades:
-            raise ValueError(f"Unrecognized grading for principal subjects: {grade}")
-    
-    for grade in [subsidiary_grade, GP_grade]:
-        if grade not in valid_sub_gp_grades:
-            raise ValueError(f"Unrecognized grading for Subsidiary subjects and General paper: {grade}")
-    grades = [subject_1_grade, subject_2_grade, subject_3_grade, subsidiary_grade, GP_grade]
-    if 'X' in grades:
-        return 'X'
-    
-    points_dict = {
-        'A': 6, 'B': 5, 'C': 4, 'D': 3, 'E': 2, 'O': 1, 'F': 0
-    }
-    
-    passed = {'D1', 'D2', 'C3', 'C4', 'C5', 'C6'}
-    
-    def get_subject_points(grade):
-        if grade in points_dict:
-            return points_dict[grade]
-        else:
-            return 1 if grade in passed else 0
-    
-    total_points = 0
-    for grade in grades:
-        total_points += get_subject_points(grade)
-    
-    return total_points
-
-def subject_grading_two_papers(paper_grade_one, paper_grade_two):
-    if (pd.isna(paper_grade_two) or pd.isnull(paper_grade_two)) and (pd.isna(paper_grade_one) or pd.isnull(paper_grade_one)):
-        return None
-    
-    if (pd.isna(paper_grade_one) or (pd.isnull(paper_grade_one)) or pd.isna(paper_grade_two) or pd.isnull(paper_grade_two)):
-        return 'X'
-    
-    """
-    Determine the subject grade for subjects with two papers.
-    
-    Grade               Paper grades
-    Principal pass A    Both paper grades must be distinctions, eg (D1, D2), (D2, D1), (D1, D1)
-    Principal pass B    Credit 3 both papers or one paper and better eg (C3, D1), (C3, C3)
-    Principal pass C    Credit 4 in both papers or better in the other eg (C3, C4), (C4, C4), (C4, D1)
-    Principal pass D    Credit 5 in both papers or better in the other eg (C3, C5), (C5, C5), (C5, D2)
-    Principal pass E    Credit 6 in both papers or better in the other eg (C6, C5), (C6, C6), (C6, D1) or
-                        paper grade involving a subject pass with (P7 or P8) whose aggregate sum does not
-                        exceed 12 eg (P7, C5), (P8, D1)
-    Subsidiary pass O   Paper grade involving a subject pass whose aggregate sum does not exceed 16
-                        eg (C6, P7), (P7, P7), (P8, P8) or
-                        paper grade involving a credit or better with and F9 in the other, eg (F9, C4), (F9, D1)
-    Fail            F   An F9 in one of the papers and a Pass in or worse in the other eg (F9, P7), (F9, F9), (F9, P8)
-    """
-    
-    distinctions = {'D1', 'D2'}
-    credit_grades = {'C3', 'C4', 'C5', 'C6'}
-    pass_grades = {'P7', 'P8'}
-    fail_grade = 'F9'
-    
-    if paper_grade_one in distinctions and paper_grade_two in distinctions:
-        return 'A'
-    
-    if (paper_grade_one == 'C3' and paper_grade_two in {'C3'} | distinctions) or \
-       (paper_grade_two == 'C3' and paper_grade_one in {'C3'} | distinctions):
-        return 'B'
-    
-    if (paper_grade_one == 'C4' and paper_grade_two in {'C4'} | distinctions | {'C3'}) or \
-       (paper_grade_two == 'C4' and paper_grade_one in {'C4'} | distinctions | {'C3'}):
-        return 'C'
-    
-    if (paper_grade_one == 'C5' and paper_grade_two in {'C5'} | distinctions | {'C3', 'C4'}) or \
-       (paper_grade_two == 'C5' and paper_grade_one in {'C5'} | distinctions | {'C3', 'C4'}):
-        return 'D'
-    
-    if (paper_grade_one == 'C6' and paper_grade_two in {'C6'} | distinctions | {'C3', 'C4', 'C5'}) or \
-       (paper_grade_two == 'C6' and paper_grade_one in {'C6'} | distinctions | {'C3', 'C4', 'C5'}):
-        return 'E'
-    if (paper_grade_one in pass_grades and paper_grade_two in {'C5', 'C6', 'D1', 'D2'}) or \
-       (paper_grade_two in pass_grades and paper_grade_one in {'C5', 'C6', 'D1', 'D2'}):
-        if int(paper_grade_one[-1]) + int(paper_grade_two[-1]) <= 12:
-            return 'E'
-    if (paper_grade_one in pass_grades and paper_grade_two in {'C6', 'C5', 'C4', 'C3', 'D1', 'D2'}) or \
-       (paper_grade_two in pass_grades and paper_grade_one in {'C6', 'C5', 'C4', 'C3', 'D1', 'D2'}):
-        if int(paper_grade_one[-1]) + int(paper_grade_two[-1]) <= 16:
-            return 'O'
-    if (paper_grade_one == fail_grade and paper_grade_two in credit_grades | distinctions) or \
-       (paper_grade_two == fail_grade and paper_grade_one in credit_grades | distinctions):
-        return 'O'
-    
-    if fail_grade in {paper_grade_one, paper_grade_two}:
-        return 'F'
-    
-    return 'F'
-
-
-def subject_grading_three_papers(paper_grade_one, paper_grade_two, paper_grade_three):
-    if (pd.isna(paper_grade_three) or pd.isnull(paper_grade_three)) and (pd.isna(paper_grade_two) or pd.isnull(paper_grade_two)) and (pd.isna(paper_grade_one) or pd.isnull(paper_grade_one)):
-        return None
-    
-    if (pd.isna(paper_grade_one) or (pd.isnull(paper_grade_one)) or pd.isna(paper_grade_two) or pd.isnull(paper_grade_two)) or (pd.isna(paper_grade_three) or pd.isnull(paper_grade_three)):
-        return 'X'
-
-    distinctions = {'D1', 'D2'}
-    credit_grades = {'C3', 'C4', 'C5', 'C6'}
-    pass_grades = {'P7', 'P8'}
-    fail_grade = 'F9'
-    
-    grades = [paper_grade_one, paper_grade_two, paper_grade_three]
-    
-    if 'C3' in grades and grades.count('C3') == 1 and all(grade in distinctions for grade in grades if grade != 'C3'):
-        return 'A'
-    
-    if all(grade in distinctions for grade in grades):
-        return 'A'
-    
-    if (('C4' in grades and grades.count('C4') == 1) or ('C3' in grades and grades.count('C3') > 1)) and all(grade in {'C3'} | distinctions for grade in grades if grade != 'C4'):
-        return 'B'
-    
-    if (('C5' in grades and grades.count('C5') == 1 or ('C4' in grades and grades.count('C4') > 1)) and all(grade in {'C4', 'C3'} | distinctions for grade in grades if grade != 'C5')):
-        return 'C'
-    
-    if (('C6' in grades and grades.count('C6') == 1) or ('C5' in grades and grades.count('C5') > 1)) and all(grade in {'C5', 'C4', 'C3'} | distinctions for grade in grades if grade != 'C6'):
-        return 'D'
-    
-    if (((grades.count('P7') == 1 and grades.count('P8') == 0) or (grades.count('P8') == 1 and grades.count('P7') == 0)) or ('C6' in grades and grades.count('C6') > 1)) and all(grade in {'C6', 'C5', 'C4', 'C3'} | distinctions for grade in grades if grade not in {'P7', 'P8'}):
-        return 'E'
-    
-    if ((grades.count(fail_grade) == 1 or len([grade for grade in grades if grade in pass_grades]) > 1) and all(grade in {'P8', 'P7','C6', 'C5', 'C4', 'C3', } | distinctions for grade in grades if grade != fail_grade)):
-        return 'O'
-    
-    if grades.count(fail_grade) == 2 and all(grade in {'C3', 'C4', 'C5', 'C6', 'D1', 'D2'} for grade in grades if grade != fail_grade):
-        return 'O'
-    if all(grade in {'P8', 'P7'} for grade in grades):
-        return 'O'
-    
-    
-    return 'F'
-
-
-
 def paper_grading(marks:np.number):
     if pd.isna(marks) or pd.isnull(marks):
         return None
@@ -197,6 +52,185 @@ def abbreviate_column_name(column_name):
     return column_name.replace(' ', '_')
 
 
+
+def calc_total_points(subject_1_grade, subject_2_grade, subject_3_grade, subsidiary_grade, GP_grade):
+    if pd.isna(subject_1_grade) or pd.isna(subject_2_grade) or pd.isna(subject_3_grade) or pd.isna(subsidiary_grade) or pd.isna(GP_grade):
+        return 'X'
+    
+    print({
+        subject_1_grade,
+        subject_2_grade,
+        subject_3_grade,
+        subsidiary_grade,
+        GP_grade
+    })    
+    valid_grades = {'A', 'B', 'C', 'D', 'E', 'O', 'F', 'D1', 'D2', 'C3', 'C4', 'C5', 'C6', 'P7', 'P8', 'F9', 'X'}
+    
+    valid_sub_gp_grades = {'D1', 'D2', 'C3', 'C4', 'C5', 'C6', 'P7', 'P8', 'F9', 'X'}
+    for grade in [subject_1_grade, subject_2_grade, subject_3_grade]:
+        if grade not in valid_grades:
+            raise ValueError(f"Unrecognized grading for principal subjects: {grade}. This is normally because one or more of the students has missing marks in a subject not just a paper")
+    
+    for grade in [subsidiary_grade, GP_grade]:
+        if grade not in valid_sub_gp_grades:
+            raise ValueError(f"Unrecognized grading for Subsidiary subjects and General paper: {grade}")
+    grades = [subject_1_grade, subject_2_grade, subject_3_grade, subsidiary_grade, GP_grade]
+    if 'X' in grades:
+        return 'X'
+    
+    points_dict = {
+        'A': 6, 'B': 5, 'C': 4, 'D': 3, 'E': 2, 'O': 1, 'F': 0
+    }
+    
+    passed = {'D1', 'D2', 'C3', 'C4', 'C5', 'C6'}
+    
+    def get_subject_points(grade):
+        if grade in points_dict:
+            return points_dict[grade]
+        else:
+            return 1 if grade in passed else 0
+    
+    total_points = 0
+    for grade in grades:
+        total_points += get_subject_points(grade)
+    
+    return total_points
+
+
+def subject_grading_two_papers(paper_grade_one, paper_grade_two):
+    if (pd.isna(paper_grade_two) or pd.isnull(paper_grade_two)) and (pd.isna(paper_grade_one) or pd.isnull(paper_grade_one)):
+        return None
+    if paper_grade_one in [None, ''] and paper_grade_two in [None, '']:
+        return None
+    
+    
+    if (pd.isna(paper_grade_one) or (pd.isnull(paper_grade_one)) or pd.isna(paper_grade_two) or pd.isnull(paper_grade_two)):
+        return 'X'
+    if paper_grade_one in [None, ''] or paper_grade_two in [None, '']:
+        return 'X'
+    
+    grade_map = {
+        'D1': 1, 'D2': 2, 'C3': 3, 'C4': 4, 'C5': 5,
+        'C6': 6, 'P7': 7, 'P8': 8, 'F9': 9
+    }
+    
+    grades = sorted([grade_map[paper_grade_one], grade_map[paper_grade_two]])
+    
+    if grades[0] <= 2 and grades[1] <= 2:
+        return "A"
+    
+    if grades[0] <= 3 and grades[1] <= 3:
+        return "B"
+    
+    if grades[0] <= 4 and grades[1] <= 4:
+        return "C"
+    
+    if grades[0] <= 5 and grades[1] <= 5:
+        return "D"
+    
+    if grades[1] <= 6 or (grades[0] in [7, 8] and sum(grades) <= 12):
+        return "E"
+    
+    if grades[1] <= 8 or (grades[1] == 9 and grades[0] < 7):
+        return "O"
+    if grades[1] == 9 and grades[0] >=7:
+        return "F"
+    
+    return "Invalid"
+
+
+
+def subject_grading_three_papers(paper_grade_one:str, paper_grade_two:str, paper_grade_three:str):
+    if (pd.isna(paper_grade_two) or pd.isnull(paper_grade_two)) and (pd.isna(paper_grade_one) or pd.isnull(paper_grade_one)) and (pd.isna(paper_grade_three) or pd.isnull(paper_grade_three)):
+        return None
+    if paper_grade_one.strip() in [None, ''] and paper_grade_two.strip() in [None, ''] and paper_grade_three.strip() in [None, '']:
+        return None
+    
+    
+    if (pd.isna(paper_grade_one) or (pd.isnull(paper_grade_one)) or pd.isna(paper_grade_two) or pd.isnull(paper_grade_two)) or (pd.isna(paper_grade_three) or pd.isnull(paper_grade_three)):
+        return 'X'
+    if paper_grade_one.strip() in [None, ''] or paper_grade_two.strip() in [None, ''] or paper_grade_three.strip() in [None, '']:
+        return 'X'
+    
+    grade_map = {
+        'D1': 1, 'D2': 2, 'C3': 3, 'C4': 4, 'C5': 5,
+        'C6': 6, 'P7': 7, 'P8': 8, 'F9': 9
+    }
+    
+    grades = sorted([grade_map[paper_grade_one], grade_map[paper_grade_two], grade_map[paper_grade_three]])
+
+    if grades[0] < 3 and grades[1] < 3 and grades[2] <= 3:
+        return "A"
+    
+    if grades[0] < 4 and grades[1] < 4 and grades[2] <= 4:
+        return "B"
+    
+    if grades[0] < 5 and grades[1] < 5 and grades[2] <= 5:
+        return "C"
+    
+    if grades[0] < 6 and grades[1] < 6 and grades[2] <= 6:
+        return "D"
+    
+    if grades[0] <=6 and grades[1] <=6 and grades[2] <= 8:
+        return "E"
+    
+    if (grades[0] <=8 and grades[1] <=8 and grades[2] <= 9) or \
+        (grades[0] <=6 and grades[1] ==9 and grades[2] == 9):
+        return "O"
+    
+    if (grades[0] > 6 and grades[1] == 9 and grades[2] == 9):
+        return "F"
+
+    return "Invalid"
+
+def subject_grading_four_papers(paper_grade_one, paper_grade_two, paper_grade_three, paper_grade_four):
+    
+    if (pd.isna(paper_grade_two) or pd.isnull(paper_grade_two)) and (pd.isna(paper_grade_one) or pd.isnull(paper_grade_one)) and (pd.isna(paper_grade_three) or pd.isnull(paper_grade_three))  and (pd.isna(paper_grade_four) or pd.isnull(paper_grade_four)):
+        return None
+    if paper_grade_one.strip() in [None, ''] and paper_grade_two.strip() in [None, ''] and paper_grade_three.strip() in [None, ''] and paper_grade_four.strip() in [None, '']:
+        return None
+    
+    
+    if (pd.isna(paper_grade_one) or (pd.isnull(paper_grade_one)) or pd.isna(paper_grade_two) or pd.isnull(paper_grade_two)) or (pd.isna(paper_grade_three) or pd.isnull(paper_grade_three)) or (pd.isna(paper_grade_four) or pd.isnull(paper_grade_four)):
+        return 'X'
+    if paper_grade_one.strip() in [None, ''] or paper_grade_two.strip() in [None, ''] or paper_grade_three.strip() in [None, ''] or paper_grade_four.strip() in [None, '']:
+        return 'X'
+    
+    
+    
+    grade_map = {
+        'D1': 1, 'D2': 2, 'C3': 3, 'C4': 4, 'C5': 5,
+        'C6': 6, 'P7': 7, 'P8': 8, 'F9': 9
+    }
+    
+    grades = sorted([grade_map[paper_grade_one], grade_map[paper_grade_two], grade_map[paper_grade_three], grade_map[paper_grade_four]])
+    
+    if grades[0] < 3 and grades[1] < 3 and grades[2] < 3 and grades[3] <= 3:
+        return "A"
+    
+    if grades[0] < 4 and grades[1] < 4 and grades[2] < 4 and grades[2] <= 4:
+        return "B"
+    
+    if grades[0] < 5 and grades[1] < 5 and grades[2] <= 5 and grades[3] <= 5:
+        return "C"
+    
+    if grades[0] < 6 and grades[1] < 6 and grades[2] <= 6 and grades[3] <= 6:
+        return "D"
+    
+    if grades[0] <=6 and grades[1] <=6 and grades[2] <=6 and grades[3] <= 8:
+        return "E"
+    
+    if (grades[0] <=8 and grades[1] <=8 and grades[2] <=8 and grades[3] <= 9) or \
+        (grades[0] <=6 and grades[1] ==9 and grades[2] == 9):
+        return "O"
+    
+    if (grades[0] > 6 and grades[1] > 6 and grades[2] == 9 and grades[3] == 9):
+        return "F"
+
+    return "Invalid"
+
+
+
 if __name__ == '__main__':
     print('For two subjects')
     print(subject_grading_two_papers('D1', 'D2'))  # Output: A
@@ -217,7 +251,7 @@ if __name__ == '__main__':
     print(subject_grading_three_papers('D1', 'C3', 'D2')) 
     print('Printing B')
     print(subject_grading_three_papers('D1', 'D2', 'C4'))  
-    print(subject_grading_three_papers('C3', 'C3', 'D4'))  
+    print(subject_grading_three_papers('C3', 'C3', 'C4'))  
     print(subject_grading_three_papers('C3', 'D1', 'C4'))  
     print(subject_grading_three_papers('C3', 'D1', 'C3'))  
     print(subject_grading_three_papers('D1', 'D1', 'C4'))  

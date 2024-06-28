@@ -11,7 +11,6 @@ def combine_mid_term(processed_subject_data):
     }
     
     for subject_name,  subject_dfs in processed_subject_data.items():
-    
         for sheet_name, df in subject_dfs.items():
             cols = list(df.columns)
             cols.remove('EOT Score')
@@ -65,7 +64,7 @@ def combine_end_of_term(processed_subject_data):
         'Senior Four': pd.DataFrame()
     }
     for subject_name,  subject_dfs in processed_subject_data.items():
-        
+        print(subject_name)
         for sheet_name, df in subject_dfs.items():
             cols = list(df.columns)
             
@@ -155,12 +154,17 @@ def combine_subjects_to_report_format(processed_subject_data, report_type='MARKS
 def parse_ordinary_level_marksheets(folder_path:str, report_type= 'MARKS_SUMMARY_REPORT'):
     try:
         parsed_subjects = grading_ordinary_level(folder_path=folder_path)
+        
         combined_subjects = combine_subjects_to_report_format(processed_subject_data=parsed_subjects, report_type=report_type)
+        
         return combined_subjects
     except Exception as e:
         raise e
 
 
 if __name__ == '__main__':
-    print(parse_ordinary_level_marksheets('./test_subjects/Marks Sheet O level', 'MID_TERM_REPORT'))
-    
+    (eot, mid) = parse_ordinary_level_marksheets('./test_subjects/Marks Sheet Term II 2024/O level Marks Sheet Term II 2024', 'MARKS_SUMMARY_REPORT')
+    for i in eot:
+        print(eot[i])
+    for i in mid:
+        print(mid[i])

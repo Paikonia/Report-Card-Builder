@@ -49,6 +49,15 @@ def abbreviate_column_name(column_name):
     column_name = column_name.replace('Mid Term', 'mt')
     return column_name.replace(' ', '_')
 
+def convert_to_percentage(marks, total):
+    if np.isnan(marks):
+        return np.nan
+    if np.isnan(total):
+        raise 'Marks entered without a total score to work it out of.'
+    
+    return (marks/total)*100
+
+
 
 def grading_ordinary_level(folder_path: str):
     if folder_path is None:
@@ -58,17 +67,13 @@ def grading_ordinary_level(folder_path: str):
     
     calculated_averages = {}
     sheet_name_list = ['Senior One', 'Senior Two', 'Senior Three', 'Senior Four']
-    expected_columns = ['Student ID', 'Name', 'A01', 'A02', 'A03', 'EOT', 'Comment']
+    expected_columns = set(['Student ID', 'Name', 'A01', 'A02', 'A03', 'EOT', 'Comment'])
     
     for filename in os.listdir(folder_path):
         if filename.endswith('.xlsx'):
             try:
                 subject_name = os.path.splitext(filename)[0]
-                parts = subject_name.split(' ')
-                if len(parts) == 3:
-                    subject_name = parts[2]
-                elif len(parts) > 3:
-                    subject_name = f"{parts[2]} {parts[3]}"
+                subject_name = subject_name.split(' - ')[1]
                 
                 expected_sheets = set(sheet_name_list)
                 actual_sheets = set(pd.ExcelFile(os.path.join(folder_path, filename)).sheet_names)
@@ -91,10 +96,30 @@ def grading_ordinary_level(folder_path: str):
                 
                 for sheet_name in sheet_name_list:
                     df = dfs_end_of_term[sheet_name]
-                    if list(df.columns) != expected_columns:
+                    actual_columns = set(df.columns)
+                    
+                    if actual_columns != expected_columns:
                         raise ValueError(f"Sheet {sheet_name} in file {filename} does not have the expected columns.\nExpected Columns {expected_columns} Passed column {df.columns}")
                     
+                    total_marks_row = df[df['Name'] == 'Total Marks']
+                    if total_marks_row.empty:
+                        raise ValueError(f"Sheet {sheet_name} does not contain a row with 'Total Marks'")
+                    
+                    total_marks_index = total_marks_row.index[0]
+                    total_marks = df.loc[total_marks_index]
+                    df = df.drop(total_marks_index)
+                    
+                    total_a01 = total_marks['A01']
+                    total_a02 = total_marks['A02']
+                    total_a03 = total_marks['A03']
+                    total_eot = total_marks['EOT']
+                    
+                    df['A01'] = df['A01'].apply(lambda x: convert_to_percentage(x, total_a01))
+                    df['A02'] = df['A02'].apply(lambda x: convert_to_percentage(x, total_a02))
+                    df['A03'] = df['A03'].apply(lambda x: convert_to_percentage(x, total_a03))
+                    
                     new_df = pd.DataFrame(columns=['Name', 'A01', 'A02', 'A03', 'Average Score', 'Formative Score', 'EOT Score', 'Total Score', 'Grade'])
+                    
                     for i, row in df.iterrows():
                         name = row['Name']
                         student_id = row['Student ID']
@@ -107,9 +132,10 @@ def grading_ordinary_level(folder_path: str):
                         else:
                             fs = round(fs) if not np.isnan(fs) else 0
                             es = round(es) if not np.isnan(es) else 0
-                            to = round((fs *0.2) + es)
+                            to = round((fs * 0.2) + es)
                         grade = calc_grading(to)
                         average_grade = calc_grading(fs)
+                        
                         new_df.at[i, 'Student ID'] = student_id
                         new_df.at[i, 'Name'] = name
                         new_df.at[i, 'A01'] = row['A01']
@@ -117,10 +143,10 @@ def grading_ordinary_level(folder_path: str):
                         new_df.at[i, 'A03'] = row['A03']
                         new_df.at[i, 'Average Score'] = fs if np.isnan(fs) else round(fs)
                         new_df.at[i, 'Average Grade'] = average_grade
-                        new_df.at[i, 'Formative Score'] = fs if np.isnan(fs) else (round(fs) * 0.2)     # fs for Formative Score 
-                        new_df.at[i, 'EOT Score'] = es                                                  # es for EOT Score
-                        new_df.at[i, 'Total Score'] = to                                                # to for Total Score
-                        new_df.at[i, 'Grade'] = grade                                                   # grade for Grade
+                        new_df.at[i, 'Formative Score'] = fs if np.isnan(fs) else (round(fs) * 0.2)
+                        new_df.at[i, 'EOT Score'] = convert_to_percentage(row['EOT'], total_eot) if not pd.isnull(row['EOT']) else np.nan
+                        new_df.at[i, 'Total Score'] = to
+                        new_df.at[i, 'Grade'] = grade
                     
                     new_dfs[sheet_name] = new_df
                 
@@ -130,6 +156,3 @@ def grading_ordinary_level(folder_path: str):
                 raise e
     
     return calculated_averages
-
-
-
