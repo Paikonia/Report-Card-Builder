@@ -53,7 +53,7 @@ def convert_to_percentage(marks, total):
     if np.isnan(marks):
         return np.nan
     if np.isnan(total):
-        raise 'Marks entered without a total score to work it out of.'
+        raise ValueError('Marks entered without a total score to work it out of.')
     
     return (marks/total)*100
 
@@ -114,9 +114,12 @@ def grading_ordinary_level(folder_path: str):
                     total_a03 = total_marks['A03']
                     total_eot = total_marks['EOT']
                     
-                    df['A01'] = df['A01'].apply(lambda x: convert_to_percentage(x, total_a01))
-                    df['A02'] = df['A02'].apply(lambda x: convert_to_percentage(x, total_a02))
-                    df['A03'] = df['A03'].apply(lambda x: convert_to_percentage(x, total_a03))
+                    try:
+                        df['A01'] = df['A01'].apply(lambda x: convert_to_percentage(x, total_a01))
+                        df['A02'] = df['A02'].apply(lambda x: convert_to_percentage(x, total_a02))
+                        df['A03'] = df['A03'].apply(lambda x: convert_to_percentage(x, total_a03))
+                    except Exception as e:
+                        raise Exception(f'An error "{str(e)}" occured when processing:\nSubject {subject_name}, class {sheet_name}')
                     
                     new_df = pd.DataFrame(columns=['Name', 'A01', 'A02', 'A03', 'Average Score', 'Formative Score', 'EOT Score', 'Total Score', 'Grade'])
                     
