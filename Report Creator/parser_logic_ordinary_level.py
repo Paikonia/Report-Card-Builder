@@ -64,7 +64,6 @@ def combine_end_of_term(processed_subject_data):
         'Senior Four': pd.DataFrame()
     }
     for subject_name,  subject_dfs in processed_subject_data.items():
-        print(subject_name)
         for sheet_name, df in subject_dfs.items():
             cols = list(df.columns)
             

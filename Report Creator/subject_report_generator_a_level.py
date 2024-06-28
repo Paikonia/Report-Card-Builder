@@ -16,8 +16,8 @@ def make_subject_report_a_level(folder_path: str):
             try:
                 new_df = pd.DataFrame()
                 subject_name = os.path.splitext(filename)[0]
-                parts = subject_name.split(' ')
-                subject_name = parts[-1]
+                subject_name = subject_name.split(' - ')[1]
+                
                 
                 expected_sheets = set(sheet_name_list)
                 actual_sheets = set(pd.ExcelFile(os.path.join(folder_path, filename)).sheet_names)
