@@ -37,17 +37,17 @@ def calculating_subject_grade(file_path:str, sheet_name:str, subject = '', mid=F
         if not os.path.isfile(file_path):
             raise FileNotFoundError(f'The file whose path you have entered {file_path} does not exist')
         df = pd.read_excel(file_path, sheet_name=sheet_name)
-        column_set = set(df.columns)
+        s = set(df.columns)
+        column_set = set()
         
-        column_len = len(column_set)
+        column_len = len(s)
         if( not column_len > 5 and not column_len < 11 ):
             raise ValueError(f'The columns are not of the right number.\nFile: {file_path}')
-        for paper in column_set:
-            if 'Unnamed: ' in paper:
+        for column_name in s:
+            if 'Unnamed: ' in column_name:
                 raise ValueError(f'The file subject {subject} in class {sheet_name} in the file {file_path} has columns that are not named.')
-        column_set.discard('Comments')
-        column_set.discard('Name')
-        column_set.discard('Student ID')
+            if 'paper' in column_name.lower():
+                column_set.add(column_name)
         
         mid_term_columns = { col for col in column_set if 'Mid' in col}
         end_of_term_columns = { col for col in column_set if 'Mid' not in col}
@@ -220,10 +220,10 @@ def  merge_subjects(parsed_subjects, combined_data_frames, apd=''):
                             if pd.isna(combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Grade']).all():
                                 combined_data_frames[class_name].loc[student_index, f'Subject {subject_num}'] = subject
                                 combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Comment'] = row['Comments']
-                                
-                                combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper'] = cols[0]
-                                combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper Marks'] = row[f'{cols[0]}']
-                                combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper Grade'] = row[f'{cols[0]} Grade']
+                                if len(cols) == 1:
+                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper'] = cols[0]
+                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper Marks'] = row[f'{cols[0]}']
+                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper Grade'] = row[f'{cols[0]} Grade']
                                 if len(cols) >1:
                                     combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Second Paper'] = cols[1]
                                     combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Second Paper Marks'] = row[f'{cols[1]}']
@@ -302,7 +302,7 @@ def combine_subjects_to_report_format(parsed_subjects, output_folder='', report_
             merge_subjects(parsed_subjects=parsed_subjects, combined_data_frames=combined_data_frames_end_of_term)
         except Exception as e:
             print(combined_data_frames_end_of_term)
-            with pd.ExcelWriter(os.path.join(output_folder, 'Errored_end_of_term_output')) as writer:
+            with pd.ExcelWriter(os.path.join(output_folder, 'Errored_end_of_term_output.xlsx')) as writer:
                 for class_name, dataframe in combined_data_frames_end_of_term.items():
                     dataframe.to_excel(writer, sheet_name=class_name, index=False)
             
@@ -314,7 +314,7 @@ def combine_subjects_to_report_format(parsed_subjects, output_folder='', report_
             merge_subjects(parsed_subjects=parsed_subjects, combined_data_frames=combined_data_frames_mid_term, apd='Mid ')
         except Exception as e:
             print(combined_data_frames_mid_term)
-            with pd.ExcelWriter(os.path.join(output_folder, 'Errored_mid_term_output')) as writer:
+            with pd.ExcelWriter(os.path.join(output_folder, 'Errored_mid_term_output.xlsx')) as writer:
                 for class_name, dataframe in combined_data_frames_mid_term.items():
                     dataframe.to_excel(writer, sheet_name=class_name, index=False)
             

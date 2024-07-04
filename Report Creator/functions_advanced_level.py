@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 
 def paper_grading(marks:np.number):
+    print(marks)
     if pd.isna(marks) or pd.isnull(marks):
         return None
     if marks >= 85:
@@ -57,13 +58,6 @@ def calc_total_points(subject_1_grade, subject_2_grade, subject_3_grade, subsidi
     if pd.isna(subject_1_grade) or pd.isna(subject_2_grade) or pd.isna(subject_3_grade) or pd.isna(subsidiary_grade) or pd.isna(GP_grade):
         return 'X'
     
-    print({
-        subject_1_grade,
-        subject_2_grade,
-        subject_3_grade,
-        subsidiary_grade,
-        GP_grade
-    })    
     valid_grades = {'A', 'B', 'C', 'D', 'E', 'O', 'F', 'D1', 'D2', 'C3', 'C4', 'C5', 'C6', 'P7', 'P8', 'F9', 'X'}
     
     valid_sub_gp_grades = {'D1', 'D2', 'C3', 'C4', 'C5', 'C6', 'P7', 'P8', 'F9', 'X'}
@@ -143,13 +137,13 @@ def subject_grading_two_papers(paper_grade_one, paper_grade_two):
 def subject_grading_three_papers(paper_grade_one:str, paper_grade_two:str, paper_grade_three:str):
     if (pd.isna(paper_grade_two) or pd.isnull(paper_grade_two)) and (pd.isna(paper_grade_one) or pd.isnull(paper_grade_one)) and (pd.isna(paper_grade_three) or pd.isnull(paper_grade_three)):
         return None
-    if paper_grade_one.strip() in [None, ''] and paper_grade_two.strip() in [None, ''] and paper_grade_three.strip() in [None, '']:
+    if paper_grade_one in [None, ''] and paper_grade_two in [None, ''] and paper_grade_three in [None, '']:
         return None
     
     
-    if (pd.isna(paper_grade_one) or (pd.isnull(paper_grade_one)) or pd.isna(paper_grade_two) or pd.isnull(paper_grade_two)) or (pd.isna(paper_grade_three) or pd.isnull(paper_grade_three)):
+    if (pd.isna(paper_grade_one) or pd.isnull(paper_grade_one)) or (pd.isna(paper_grade_two) or pd.isnull(paper_grade_two)) or (pd.isna(paper_grade_three) or pd.isnull(paper_grade_three)):
         return 'X'
-    if paper_grade_one.strip() in [None, ''] or paper_grade_two.strip() in [None, ''] or paper_grade_three.strip() in [None, '']:
+    if paper_grade_one in [None, ''] or paper_grade_two in [None, ''] or paper_grade_three in [None, '']:
         return 'X'
     
     grade_map = {
@@ -187,13 +181,13 @@ def subject_grading_four_papers(paper_grade_one, paper_grade_two, paper_grade_th
     
     if (pd.isna(paper_grade_two) or pd.isnull(paper_grade_two)) and (pd.isna(paper_grade_one) or pd.isnull(paper_grade_one)) and (pd.isna(paper_grade_three) or pd.isnull(paper_grade_three))  and (pd.isna(paper_grade_four) or pd.isnull(paper_grade_four)):
         return None
-    if paper_grade_one.strip() in [None, ''] and paper_grade_two.strip() in [None, ''] and paper_grade_three.strip() in [None, ''] and paper_grade_four.strip() in [None, '']:
+    if paper_grade_one in [None, ''] and paper_grade_two in [None, ''] and paper_grade_three in [None, ''] and paper_grade_four in [None, '']:
         return None
     
     
     if (pd.isna(paper_grade_one) or (pd.isnull(paper_grade_one)) or pd.isna(paper_grade_two) or pd.isnull(paper_grade_two)) or (pd.isna(paper_grade_three) or pd.isnull(paper_grade_three)) or (pd.isna(paper_grade_four) or pd.isnull(paper_grade_four)):
         return 'X'
-    if paper_grade_one.strip() in [None, ''] or paper_grade_two.strip() in [None, ''] or paper_grade_three.strip() in [None, ''] or paper_grade_four.strip() in [None, '']:
+    if paper_grade_one in [None, ''] or paper_grade_two in [None, ''] or paper_grade_three in [None, ''] or paper_grade_four in [None, '']:
         return 'X'
     
     

@@ -53,17 +53,18 @@ def make_reports(unprocessed_marks_o_level, unprocessed_marks_a_level, template_
     }
     
     if report_type == 'SUBJECT_SUMMARY_REPORT':
-        try:
-            caught_summary_error
+        
+            caught_summary_error = False
             summary_errors = {}
             try:
+                
                 a_level_per_subject_report = make_subject_report_a_level(unprocessed_marks_a_level)
                 file_path_a_level = os.path.join(output_path, 'Subject Reports A level.xlsx')
                 
                 with ExcelWriter(file_path_a_level) as writer:
                     for class_name, df in a_level_per_subject_report.items():
                         df.to_excel(writer, sheet_name=class_name, index=False)
-                    
+                
             except Exception as e:
                 caught_summary_error = True
                 summary_errors['A level error'] = str(e)
@@ -80,8 +81,7 @@ def make_reports(unprocessed_marks_o_level, unprocessed_marks_a_level, template_
             
             if caught_summary_error:
                 raise Exception(summary_errors)
-        except Exception as e:
-            raise e
+        
     
     
     if report_type == 'END_OF_TERM_REPORT':
@@ -131,7 +131,7 @@ def make_reports(unprocessed_marks_o_level, unprocessed_marks_a_level, template_
             error['Caught Error O level'] = str(e)
         
         if caught_error:
-            raise Exception(error)
+            raise Exception(f'{error} end of term')
 
 
     if report_type == 'MID_TERM_REPORT':
@@ -198,7 +198,7 @@ def make_reports(unprocessed_marks_o_level, unprocessed_marks_a_level, template_
 
     
 if __name__ == '__main__':
-    make_reports('./test_subjects/Marks Sheet Term II 2024/O level Marks Sheet Term II 2024', './test_subjects/Marks Sheet Term II 2024/A level Marks Sheet Term II 2024', './test_subjects/templates', 'test_subjects/Reports', '1', '2019', 'MID_TERM_REPORT')
-    
+    # make_reports('./test_subjects/Marks Sheet Term II 2024/O level Marks Sheet Term II 2024', './test_subjects/Marks Sheet Term II 2024/A level Marks Sheet Term II 2024', './test_subjects/templates', 'test_subjects/Reports', '1', '2019', 'MID_TERM_REPORT')
+    make_reports('./test_subjects/Marksheet Term One 2024', './test_subjects/Marksheet Term One 2024', './test_subjects/templates', 'test_subjects/Reports', '1', '2019', 'MARKS_SUMMARY_REPORT')
     
     

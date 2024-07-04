@@ -102,8 +102,8 @@ def grading_ordinary_level(folder_path: str):
                         raise ValueError(f"Sheet {sheet_name} in file {filename} does not have the expected columns.\nExpected Columns {expected_columns} Passed column {df.columns}")
                     
                     total_marks_row = df[df['Name'] == 'Total Marks']
-                    if total_marks_row.empty:
-                        raise ValueError(f"Sheet {sheet_name} does not contain a row with 'Total Marks'")
+                    # if total_marks_row.empty:
+                    #     raise ValueError(f"Sheet {sheet_name} does not contain a row with 'Total Marks'")
                     
                     total_marks_index = total_marks_row.index[0]
                     total_marks = df.loc[total_marks_index]

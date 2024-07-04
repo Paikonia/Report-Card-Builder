@@ -72,7 +72,12 @@ import pandas as pd
 import numpy as np
 
 def convert_to_percentage(marks, total):
-    return (marks / total) * 100 if total else np.nan
+    if np.isnan(marks):
+        return np.nan
+    if np.isnan(total):
+        raise ValueError('Marks entered without a total score to work it out of.')
+    
+    return (marks / total) * 100 if total and marks else np.nan
 
 def make_subject_report_o_level(folder_path: str):
     if folder_path is None:
@@ -114,8 +119,8 @@ def make_subject_report_o_level(folder_path: str):
                 for class_name, df in dfs_end_of_term.items():
                     if all(col in df.columns for col in expected_columns):
                         total_marks_row = df[df['Name'] == 'Total Marks']
-                        if total_marks_row.empty:
-                            raise Exception(f'The marks sheet for {subject_name} - {class_name} is missing the "Total Marks" row. It is a requirement for correct calculations')
+                        # if total_marks_row.empty:
+                        #     raise Exception(f'The marks sheet for {subject_name} - {class_name} is missing the "Total Marks" row. It is a requirement for correct calculations')
                         total_marks_index = total_marks_row.index[0]
                         total_marks = df.loc[total_marks_index]
                         df = df.drop(total_marks_index)
