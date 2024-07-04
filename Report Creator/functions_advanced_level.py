@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 
 def paper_grading(marks:np.number):
-    print(marks)
     if pd.isna(marks) or pd.isnull(marks):
         return None
     if marks >= 85:

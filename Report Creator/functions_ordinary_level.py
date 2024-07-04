@@ -69,6 +69,8 @@ def grading_ordinary_level(folder_path: str):
     sheet_name_list = ['Senior One', 'Senior Two', 'Senior Three', 'Senior Four']
     expected_columns = set(['Student ID', 'Name', 'A01', 'A02', 'A03', 'EOT', 'Comment'])
     
+    
+    
     for filename in os.listdir(folder_path):
         if filename.endswith('.xlsx'):
             try:
@@ -86,6 +88,9 @@ def grading_ordinary_level(folder_path: str):
                     sheet_name: pd.read_excel(os.path.join(folder_path, filename), sheet_name=sheet_name)
                     for sheet_name in sheet_name_list
                 }
+                
+                
+                
                 columns = ['student_id', 'Name', 'A01', 'A02', 'A03', 'Formative Score', 'EOT Score', 'Total Score', 'Grade', 'Comment']
                 new_dfs = {
                     'Senior One': pd.DataFrame(columns=columns), 
@@ -101,6 +106,10 @@ def grading_ordinary_level(folder_path: str):
                     if actual_columns != expected_columns:
                         raise ValueError(f"Sheet {sheet_name} in file {filename} does not have the expected columns.\nExpected Columns {expected_columns} Passed column {df.columns}")
                     
+                    df['A01'] = pd.to_numeric(df['A01'], errors='coerce')
+                    df['A02'] = pd.to_numeric(df['A02'], errors='coerce')
+                    df['A03'] = pd.to_numeric(df['A03'], errors='coerce')
+                    df['EOT'] = pd.to_numeric(df['EOT'], errors='coerce')
                     total_marks_row = df[df['Name'] == 'Total Marks']
                     # if total_marks_row.empty:
                     #     raise ValueError(f"Sheet {sheet_name} does not contain a row with 'Total Marks'")

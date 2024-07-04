@@ -49,6 +49,10 @@ def calculating_subject_grade(file_path:str, sheet_name:str, subject = '', mid=F
             if 'paper' in column_name.lower():
                 column_set.add(column_name)
         
+        for column in column_set:
+            df[column] = pd.to_numeric(df[column], errors='coerce')
+        
+        
         mid_term_columns = { col for col in column_set if 'Mid' in col}
         end_of_term_columns = { col for col in column_set if 'Mid' not in col}
         grade_list = []
