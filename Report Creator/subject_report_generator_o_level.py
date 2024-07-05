@@ -117,6 +117,10 @@ def make_subject_report_o_level(folder_path: str):
                 }
 
                 for class_name, df in dfs_end_of_term.items():
+                    df['A01'] = pd.to_numeric(df['A01'], errors='coerce')
+                    df['A02'] = pd.to_numeric(df['A02'], errors='coerce')
+                    df['A03'] = pd.to_numeric(df['A03'], errors='coerce')
+                    df['EOT'] = pd.to_numeric(df['EOT'], errors='coerce')
                     if all(col in df.columns for col in expected_columns):
                         total_marks_row = df[df['Name'] == 'Total Marks']
                         # if total_marks_row.empty:

@@ -39,7 +39,14 @@ def make_subject_report_a_level(folder_path: str):
                     current_columns.discard('Student ID')
                     current_columns.discard('Comments')
 
+                    for i in current_columns:
+                        if 'paper' not in i.lower():
+                            current_columns.discard(i)
+                        else:
+                            df[i] = pd.to_numeric(df[i], errors='coerce')
+                    
                     class_metrics = [class_name, len(df)]
+                    
                     for col in current_columns:
                         class_metrics.extend([
                             df[col].count(), df[col].mean(), df[col].max(), df[col].min()
