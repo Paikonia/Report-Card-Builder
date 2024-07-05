@@ -88,7 +88,7 @@ def make_reports(unprocessed_marks_o_level, unprocessed_marks_a_level, template_
         try:
             (end_of_term_a_level, _) = parse_advanced_level_marksheet(folder_path=unprocessed_marks_a_level, report_type=report_type)
              
-            a_level_template_name = "A' level Report Card Template.docx"
+            a_level_template_name = "A level Report Card Template.docx"
             a_level_template_path = os.path.join(template_path, a_level_template_name)
             if not os.path.exists(path=a_level_template_path):
                 raise NameError(f'The folder {template_path} does not include a template for A level.\nThe template should be named {a_level_template_name}')    
@@ -111,7 +111,7 @@ def make_reports(unprocessed_marks_o_level, unprocessed_marks_a_level, template_
         
         try:
             (end_of_term_o_level, _) = parse_ordinary_level_marksheets(folder_path=unprocessed_marks_o_level, report_type=report_type)
-            o_level_template_name = "O' level Report Card Template.docx"
+            o_level_template_name = "O level Report Card Template.docx"
             o_level_template_path = os.path.join(template_path, o_level_template_name)
             if not os.path.exists(path=o_level_template_path):
                 raise NameError(f'The folder {template_path} does not include a template for O level.\nThe template should be named {o_level_template_name}')
@@ -137,12 +137,12 @@ def make_reports(unprocessed_marks_o_level, unprocessed_marks_a_level, template_
     if report_type == 'MID_TERM_REPORT':
         try:
             (_, mid_term_results_a_level) = parse_advanced_level_marksheet(folder_path=unprocessed_marks_a_level, report_type=report_type)
-            a_level_template_name = "A' level Mid Term Report Card Template.docx"
+            a_level_template_name = "A level Mid Term Report Card Template.docx"
             a_level_template_path = os.path.join(template_path, a_level_template_name)
             if not os.path.exists(path=a_level_template_path):
                 raise NameError(f'The folder {template_path} does not include a template for A level Mid Term.\nThe template should be named {a_level_template_name}')    
             merging_error = ''
-            merging_error_caught
+            merging_error_caught = False
             for c, df in mid_term_results_a_level.items():
                 try:
                     run_mail_merge(data_frame=df, template_path=a_level_template_path, output_path=output_path, class_name=classes[c], academic_year=year, academic_term=term)
@@ -156,12 +156,12 @@ def make_reports(unprocessed_marks_o_level, unprocessed_marks_a_level, template_
             error['Caught Error A level'] = str(e)
         try:        
             (_, mid_term_results_o_level) = parse_ordinary_level_marksheets(folder_path=unprocessed_marks_o_level, report_type=report_type)
-            o_level_template_name = "O' level Mid Term Report Card Template.docx"
+            o_level_template_name = "O level Mid Term Report Card Template.docx"
             o_level_template_path = os.path.join(template_path, o_level_template_name)
             if not os.path.exists(path=o_level_template_path):
                 raise NameError(f'The folder {template_path} does not include a template for O levelMid Term.\nThe template should be named {o_level_template_name}')
             merging_error = ''
-            merging_error_caught
+            merging_error_caught = False
             for c, df in mid_term_results_o_level.items():
                 try:
                     run_mail_merge(data_frame=df, template_path=o_level_template_path, output_path=output_path, class_name=classes[c], academic_year=year, academic_term=term)
