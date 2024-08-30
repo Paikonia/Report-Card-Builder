@@ -106,6 +106,7 @@ def  merge_subjects(parsed_subjects, combined_data_frames, apd=''):
     for subject, classes in parsed_subjects.items():
         
         for class_name, class_df in classes.items():
+            
             old_cols = set(class_df.columns)
             cols = []
             for i in old_cols:
@@ -115,135 +116,140 @@ def  merge_subjects(parsed_subjects, combined_data_frames, apd=''):
                     elif apd.strip().lower() == 'mid' and 'Mid' in i:
                         cols.append(i)
             cols.sort()
-            
-            for i, row in class_df.iterrows():
-                
-                if pd.notna(row[f'{apd}Subject Grade']):
-                    student_index = combined_data_frames[class_name][combined_data_frames[class_name]['Name'] == row['Name']].index
-                    if subject.strip().upper() == 'GP' or subject.strip().upper() == 'GENERAL PAPER':
-                        if student_index.empty:
-                            new_row = {
-                                'Student ID': row['Student ID'],
-                                'Name': row['Name'],
-                            }
-                            new_row.update({
-                                'GP Marks': row[f'{apd}Paper 1'],
-                                'GP Grade': row[f'{apd}Paper 1 Grade'],
-                                'GP Comment': row['Comments']
-                            })
-                            combined_data_frames[class_name] = pd.concat([combined_data_frames[class_name], pd.DataFrame([new_row])], ignore_index=True)      
-                        else:
-                            combined_data_frames[class_name].loc[student_index, f'GP Marks'] = row[f'Paper 1']
-                            combined_data_frames[class_name].loc[student_index, f'GP Comment'] = row[f'Comments']
-                            combined_data_frames[class_name].loc[student_index, f'GP Grade'] = row[f'Paper 1 Grade']
-                        continue
-                                
-                            
-                    if subject == 'SUBMATH':
-                        if student_index.empty:
-                            new_row = {
-                                'Student ID': row['Student ID'],
-                                'Name': row['Name'],
-                            }
-                            new_row.update({
-                                'Subsidiary Marks': row[f'{apd}Paper 1'],
-                                'Subsidiary Grade': row[f'{apd}Paper 1 Grade'],
-                                'Subsidiary Subject': 'SUBMATH',
-                                'Subsidiary Comment': row['Comments']
-                            })
-                            combined_data_frames[class_name] = pd.concat([combined_data_frames[class_name], pd.DataFrame([new_row])], ignore_index=True)      
-                        else:
-                            combined_data_frames[class_name].loc[student_index, 'Subsidiary Marks'] = row['Paper 1']
-                            combined_data_frames[class_name].loc[student_index, 'Subsidiary Comment'] = row['Comments']
-                            combined_data_frames[class_name].loc[student_index, 'Subsidiary Grade'] = row['Paper 1 Grade']
-                            combined_data_frames[class_name].loc[student_index, 'Subsidiary Subject'] = 'SUBMATH'
-                        continue
+            try:
+                for i, row in class_df.iterrows():
                     
-                    if subject == 'ICT':
+                    if pd.notna(row[f'{apd}Subject Grade']):
+                        student_index = combined_data_frames[class_name][combined_data_frames[class_name]['Name'] == row['Name']].index
+                        print(student_index)
+                        print(combined_data_frames[class_name]['Name'])
+                        if subject.strip().upper() == 'GP' or subject.strip().upper() == 'GENERAL PAPER':
+                            if student_index.empty:
+                                new_row = {
+                                    'Student ID': row['Student ID'],
+                                    'Name': row['Name'],
+                                }
+                                new_row.update({
+                                    'GP Marks': row[f'{apd}Paper 1'],
+                                    'GP Grade': row[f'{apd}Paper 1 Grade'],
+                                    'GP Comment': row['Comments']
+                                })
+                                combined_data_frames[class_name] = pd.concat([combined_data_frames[class_name], pd.DataFrame([new_row])], ignore_index=True)      
+                            else:
+                                combined_data_frames[class_name].loc[student_index, f'GP Marks'] = row[f'Paper 1']
+                                combined_data_frames[class_name].loc[student_index, f'GP Comment'] = row[f'Comments']
+                                combined_data_frames[class_name].loc[student_index, f'GP Grade'] = row[f'Paper 1 Grade']
+                            continue
+                                    
+                                
+                        if subject == 'SUBMATH':
+                            if student_index.empty:
+                                new_row = {
+                                    'Student ID': row['Student ID'],
+                                    'Name': row['Name'],
+                                }
+                                new_row.update({
+                                    'Subsidiary Marks': row[f'{apd}Paper 1'],
+                                    'Subsidiary Grade': row[f'{apd}Paper 1 Grade'],
+                                    'Subsidiary Subject': 'SUBMATH',
+                                    'Subsidiary Comment': row['Comments']
+                                })
+                                combined_data_frames[class_name] = pd.concat([combined_data_frames[class_name], pd.DataFrame([new_row])], ignore_index=True)      
+                            else:
+                                combined_data_frames[class_name].loc[student_index, 'Subsidiary Marks'] = row['Paper 1']
+                                combined_data_frames[class_name].loc[student_index, 'Subsidiary Comment'] = row['Comments']
+                                combined_data_frames[class_name].loc[student_index, 'Subsidiary Grade'] = row['Paper 1 Grade']
+                                combined_data_frames[class_name].loc[student_index, 'Subsidiary Subject'] = 'SUBMATH'
+                            continue
                         
+                        if subject == 'ICT':
+                            
+                            if student_index.empty:
+                                new_row = {
+                                    'Student ID': row['Student ID'],
+                                    'Name': row['Name'],
+                                }
+                                new_row.update({
+                                    'Subsidiary Marks': row[f'{apd}Total Marks'],
+                                    'Subsidiary Grade': row[f'Subject Grade'],
+                                    'Subsidiary Subject': 'ICT',
+                                    'Subsidiary Comment': row['Comments']
+                                })
+                                combined_data_frames[class_name] = pd.concat([combined_data_frames[class_name], pd.DataFrame([new_row])], ignore_index=True)      
+                            else:
+                                combined_data_frames[class_name].loc[student_index, 'Subsidiary Marks'] = row[f'{apd}Total Marks']
+                                combined_data_frames[class_name].loc[student_index, 'Subsidiary Comment'] = row['Comments']
+                                combined_data_frames[class_name].loc[student_index, 'Subsidiary Grade'] = row[f'Subject Grade']
+                                combined_data_frames[class_name].loc[student_index, 'Subsidiary Subject'] = 'ICT'
+                            continue
+                            
                         if student_index.empty:
                             new_row = {
                                 'Student ID': row['Student ID'],
                                 'Name': row['Name'],
                             }
-                            new_row.update({
-                                'Subsidiary Marks': row[f'{apd}Total Marks'],
-                                'Subsidiary Grade': row[f'Subject Grade'],
-                                'Subsidiary Subject': 'ICT',
-                                'Subsidiary Comment': row['Comments']
-                            })
-                            combined_data_frames[class_name] = pd.concat([combined_data_frames[class_name], pd.DataFrame([new_row])], ignore_index=True)      
-                        else:
-                            combined_data_frames[class_name].loc[student_index, 'Subsidiary Marks'] = row[f'{apd}Total Marks']
-                            combined_data_frames[class_name].loc[student_index, 'Subsidiary Comment'] = row['Comments']
-                            combined_data_frames[class_name].loc[student_index, 'Subsidiary Grade'] = row[f'Subject Grade']
-                            combined_data_frames[class_name].loc[student_index, 'Subsidiary Subject'] = 'ICT'
-                        continue
-                        
-                    if student_index.empty:
-                        new_row = {
-                            'Student ID': row['Student ID'],
-                            'Name': row['Name'],
-                        }
-                        for subject_num in range(1, 4):
-                            new_row.update({
-                                f'Subject {subject_num}': subject,
-                                f'Subject {subject_num} Comment': row['Comments'],
-                                f'Subject {subject_num} First Paper': cols[0],
-                                f'Subject {subject_num} First Paper Marks': row[f'{cols[0]}'],
-                                f'Subject {subject_num} First Paper Grade': row[f'{cols[0]} Grade'],
-                            })
-                            if len(cols) > 1:
-                                
+                            
+                            for subject_num in range(1, 4):
                                 new_row.update({
-                                    f'Subject {subject_num} Second Paper': cols[1],
-                                    f'Subject {subject_num} Second Paper Marks': row[f'{cols[1]}'],
-                                    f'Subject {subject_num} Second Paper Grade': row[f'{cols[1]} Grade']
+                                    f'Subject {subject_num}': subject,
+                                    f'Subject {subject_num} Comment': row['Comments'],
+                                    f'Subject {subject_num} First Paper': cols[0],
+                                    f'Subject {subject_num} First Paper Marks': row[f'{cols[0]}'],
+                                    f'Subject {subject_num} First Paper Grade': row[f'{cols[0]} Grade'],
                                 })
-                            if  len(cols) > 2:
-                                new_row.update({
-                                    f'Subject {subject_num} Second Paper': cols[2],
-                                    f'Subject {subject_num} Second Paper Marks': row[f'{cols[2]}'],
-                                    f'Subject {subject_num} Second Paper Grade': row[f'{cols[2]} Grade']
-                                })
-                            
-                            if  len(cols) > 3:
-                                new_row.update({
-                                    f'Subject {subject_num} Second Paper': cols[3],
-                                    f'Subject {subject_num} Second Paper Marks': row[f'{cols[3]}'],
-                                    f'Subject {subject_num} Second Paper Grade': row[f'{cols[3]} Grade']
-                                })
-                            
-                            new_row.update({f'Subject {subject_num} Grade': row[f'Subject Grade']})
-                            break
-                        combined_data_frames[class_name] = pd.concat([combined_data_frames[class_name], pd.DataFrame([new_row])], ignore_index=True)
-                    else:
-                        for subject_num in range(1, 4):
-                            
-                            
-                            if pd.isna(combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Grade']).all():
-                                combined_data_frames[class_name].loc[student_index, f'Subject {subject_num}'] = subject
-                                combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Comment'] = row['Comments']
-                                if len(cols) == 1:
-                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper'] = cols[0]
-                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper Marks'] = row[f'{cols[0]}']
-                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper Grade'] = row[f'{cols[0]} Grade']
-                                if len(cols) >1:
-                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Second Paper'] = cols[1]
-                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Second Paper Marks'] = row[f'{cols[1]}']
-                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Second Paper Grade'] = row[f'{cols[1]} Grade']
-                                if len(cols) > 2:
-                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Third Paper'] = cols[2]
-                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Third Paper Marks'] = row[f'{cols[2]}']
-                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Third Paper Grade'] = row[f'{cols[2]} Grade']
-                                if len(cols) > 3:
-                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Third Paper'] = cols[3]
-                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Third Paper Marks'] = row[f'{cols[3]}']
-                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Third Paper Grade'] = row[f'{cols[0]} Grade']
+                                if len(cols) > 1:
                                     
-                                combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Grade'] = row['Subject Grade']
+                                    new_row.update({
+                                        f'Subject {subject_num} Second Paper': cols[1],
+                                        f'Subject {subject_num} Second Paper Marks': row[f'{cols[1]}'],
+                                        f'Subject {subject_num} Second Paper Grade': row[f'{cols[1]} Grade']
+                                    })
+                                if  len(cols) > 2:
+                                    new_row.update({
+                                        f'Subject {subject_num} Second Paper': cols[2],
+                                        f'Subject {subject_num} Second Paper Marks': row[f'{cols[2]}'],
+                                        f'Subject {subject_num} Second Paper Grade': row[f'{cols[2]} Grade']
+                                    })
+                                
+                                if  len(cols) > 3:
+                                    new_row.update({
+                                        f'Subject {subject_num} Second Paper': cols[3],
+                                        f'Subject {subject_num} Second Paper Marks': row[f'{cols[3]}'],
+                                        f'Subject {subject_num} Second Paper Grade': row[f'{cols[3]} Grade']
+                                    })
+                                
+                                new_row.update({f'Subject {subject_num} Grade': row[f'Subject Grade']})
                                 break
+                            combined_data_frames[class_name] = pd.concat([combined_data_frames[class_name], pd.DataFrame([new_row])], ignore_index=True)
+                        else:
                             
+                            for subject_num in range(1, 4):
+                                
+                                
+                                if pd.isna(combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Grade']).all():
+                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num}'] = subject
+                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Comment'] = row['Comments']
+                                    if len(cols) == 1:
+                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper'] = cols[0]
+                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper Marks'] = row[f'{cols[0]}']
+                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper Grade'] = row[f'{cols[0]} Grade']
+                                    if len(cols) >1:
+                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Second Paper'] = cols[1]
+                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Second Paper Marks'] = row[f'{cols[1]}']
+                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Second Paper Grade'] = row[f'{cols[1]} Grade']
+                                    if len(cols) > 2:
+                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Third Paper'] = cols[2]
+                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Third Paper Marks'] = row[f'{cols[2]}']
+                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Third Paper Grade'] = row[f'{cols[2]} Grade']
+                                    if len(cols) > 3:
+                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Third Paper'] = cols[3]
+                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Third Paper Marks'] = row[f'{cols[3]}']
+                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Third Paper Grade'] = row[f'{cols[0]} Grade']
+                                        
+                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Grade'] = row['Subject Grade']
+                                    break
+            except Exception as e:
+                print(e)                 
         
     for class_name, df in combined_data_frames.items():
         combined_data_frames[class_name]['Total Points'] = df.apply(
@@ -371,7 +377,7 @@ if __name__ == '__main__':
     #     for class_name, df in end_of_term.items():
     #         df.to_excel(writer, sheet_name=class_name, index=False)
     
-    with pd.ExcelWriter('combined_data_frames_a_level_mid_term.xlsx') as writer:
-        for class_name, df in mid_term.items():
+    with pd.ExcelWriter('combined_data_frames_a_level_end_of_term.xlsx') as writer:
+        for class_name, df in end_of_term.items():
             df.to_excel(writer, sheet_name=class_name, index=False)
     

@@ -99,10 +99,10 @@ def combine_end_of_term(processed_subject_data):
         formative_score_cols = [col for col in df.columns if 'Formative Score' in col]
         eot_score_cols = [col for col in df.columns if 'EOT Score' in col]
         total_score_cols = [col for col in df.columns if 'Total Score' in col]
-        df['Average Formative Score'] = df[formative_score_cols].mean(axis=1)
-        df['Average EOT Score'] = df[eot_score_cols].mean(axis=1)
-        df['Average Total Score'] = df[total_score_cols].mean(axis=1)
-        df['Average Grade'] = df['Average Total Score'].apply(calc_grading)
+        df['Average Formative Score'] = df[formative_score_cols].mean(axis=1).round(2)
+        df['Average EOT Score'] = df[eot_score_cols].mean(axis=1).round(2)
+        df['Average Total Score'] = df[total_score_cols].mean(axis=1).round(2)
+        df['Average Grade'] = df['Average Total Score'].apply(calc_grading).round(2)
         df['Position'] = df['Average Total Score'].rank(method='min', ascending=False)
         df['Position'] = df['Position'].fillna(-1)
         df['Position'] = df['Position'].astype(int)    

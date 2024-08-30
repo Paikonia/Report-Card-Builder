@@ -69,8 +69,6 @@ def grading_ordinary_level(folder_path: str):
     sheet_name_list = ['Senior One', 'Senior Two', 'Senior Three', 'Senior Four']
     expected_columns = set(['Student ID', 'Name', 'A01', 'A02', 'A03', 'EOT', 'Comment'])
     
-    
-    
     for filename in os.listdir(folder_path):
         if filename.endswith('.xlsx'):
             try:
@@ -89,8 +87,6 @@ def grading_ordinary_level(folder_path: str):
                     for sheet_name in sheet_name_list
                 }
                 
-                
-                
                 columns = ['student_id', 'Name', 'A01', 'A02', 'A03', 'Formative Score', 'EOT Score', 'Total Score', 'Grade', 'Comment']
                 new_dfs = {
                     'Senior One': pd.DataFrame(columns=columns), 
@@ -101,6 +97,10 @@ def grading_ordinary_level(folder_path: str):
                 
                 for sheet_name in sheet_name_list:
                     df = dfs_end_of_term[sheet_name]
+                    
+                    
+                    df['Name'] = df['Name'].str.strip().str.upper()
+                    
                     actual_columns = set(df.columns)
                     
                     if actual_columns != expected_columns:
@@ -110,9 +110,11 @@ def grading_ordinary_level(folder_path: str):
                     df['A02'] = pd.to_numeric(df['A02'], errors='coerce')
                     df['A03'] = pd.to_numeric(df['A03'], errors='coerce')
                     df['EOT'] = pd.to_numeric(df['EOT'], errors='coerce')
-                    total_marks_row = df[df['Name'] == 'Total Marks']
-                    # if total_marks_row.empty:
-                    #     raise ValueError(f"Sheet {sheet_name} does not contain a row with 'Total Marks'")
+                    
+                    total_marks_row = df[df['Name'] == 'TOTAL MARKS']
+                    
+                    if total_marks_row.empty:
+                        raise ValueError(f"Subject {subject_name} - Sheet {sheet_name} does not contain a row with 'Total Marks'")
                     
                     total_marks_index = total_marks_row.index[0]
                     total_marks = df.loc[total_marks_index]
@@ -121,14 +123,14 @@ def grading_ordinary_level(folder_path: str):
                     total_a01 = total_marks['A01']
                     total_a02 = total_marks['A02']
                     total_a03 = total_marks['A03']
-                    total_eot = total_marks['EOT']
+                    total_eot = total_marks['EOT'] if not pd.isnull(total_marks['EOT']) else 100
                     
                     try:
                         df['A01'] = df['A01'].apply(lambda x: convert_to_percentage(x, total_a01))
                         df['A02'] = df['A02'].apply(lambda x: convert_to_percentage(x, total_a02))
                         df['A03'] = df['A03'].apply(lambda x: convert_to_percentage(x, total_a03))
                     except Exception as e:
-                        raise Exception(f'An error "{str(e)}" occured when processing:\nSubject {subject_name}, class {sheet_name}')
+                        raise Exception(f'An error "{str(e)}" occurred when processing:\nSubject {subject_name}, class {sheet_name}')
                     
                     new_df = pd.DataFrame(columns=['Name', 'A01', 'A02', 'A03', 'Average Score', 'Formative Score', 'EOT Score', 'Total Score', 'Grade'])
                     
@@ -168,3 +170,4 @@ def grading_ordinary_level(folder_path: str):
                 raise e
     
     return calculated_averages
+
