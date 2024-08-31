@@ -37,6 +37,7 @@ def calculating_subject_grade(file_path:str, sheet_name:str, subject = '', mid=F
         if not os.path.isfile(file_path):
             raise FileNotFoundError(f'The file whose path you have entered {file_path} does not exist')
         df = pd.read_excel(file_path, sheet_name=sheet_name)
+        df['Name'] = df['Name'].str.strip().str.upper()
         s = set(df.columns)
         column_set = set()
         
@@ -64,8 +65,7 @@ def calculating_subject_grade(file_path:str, sheet_name:str, subject = '', mid=F
         else:
             apply_grading_ict(df, end_of_term_columns)
             apply_grading_ict(df, end_of_term_columns, apd='Mid ')
-            
-                
+       
         return len(df), df
     except KeyError as e:
         raise KeyError(f'A mandatory co')
@@ -88,12 +88,12 @@ def grading_advanced_level(subject_dir_path):
             # if("A'" not in parts):
             #     raise NameError(f"The name of the file {file_name} is incorrect, it must include A' level to differentiate it from O level class")
             
-            (student_number, subject_data_frame_senior_five) = calculating_subject_grade(os.path.join(subject_dir_path, file_name), sheet_name='Senior Five', subject=subject_name)
-            (student_number, subject_data_frame_senior_six) = calculating_subject_grade(os.path.join(subject_dir_path, file_name), sheet_name='Senior Six', subject=subject_name)
+            (s5_n, subject_data_frame_senior_five) = calculating_subject_grade(os.path.join(subject_dir_path, file_name), sheet_name='Senior Five', subject=subject_name)
+            # (s6_n, subject_data_frame_senior_six) = calculating_subject_grade(os.path.join(subject_dir_path, file_name), sheet_name='Senior Six', subject=subject_name)
             
             sub_dict = {
                 'Senior Five': subject_data_frame_senior_five,
-                'Senior Six': subject_data_frame_senior_six
+                # 'Senior Six': subject_data_frame_senior_six
             }
             
             parsed_subjects[subject_name] = sub_dict
@@ -102,11 +102,11 @@ def grading_advanced_level(subject_dir_path):
 
 
 def  merge_subjects(parsed_subjects, combined_data_frames, apd=''):
-    
+    subject_count = 0
     for subject, classes in parsed_subjects.items():
-        
+        subject_count=subject_count+1
         for class_name, class_df in classes.items():
-            
+              
             old_cols = set(class_df.columns)
             cols = []
             for i in old_cols:
@@ -116,13 +116,13 @@ def  merge_subjects(parsed_subjects, combined_data_frames, apd=''):
                     elif apd.strip().lower() == 'mid' and 'Mid' in i:
                         cols.append(i)
             cols.sort()
+            class_df = class_df.dropna(subset=[f'{apd}Subject Grade'])
             try:
                 for i, row in class_df.iterrows():
                     
                     if pd.notna(row[f'{apd}Subject Grade']):
                         student_index = combined_data_frames[class_name][combined_data_frames[class_name]['Name'] == row['Name']].index
-                        print(student_index)
-                        print(combined_data_frames[class_name]['Name'])
+                       
                         if subject.strip().upper() == 'GP' or subject.strip().upper() == 'GENERAL PAPER':
                             if student_index.empty:
                                 new_row = {
@@ -142,7 +142,7 @@ def  merge_subjects(parsed_subjects, combined_data_frames, apd=''):
                             continue
                                     
                                 
-                        if subject == 'SUBMATH':
+                        if subject.strip().upper() == 'SUBMATH':
                             if student_index.empty:
                                 new_row = {
                                     'Student ID': row['Student ID'],
@@ -162,7 +162,7 @@ def  merge_subjects(parsed_subjects, combined_data_frames, apd=''):
                                 combined_data_frames[class_name].loc[student_index, 'Subsidiary Subject'] = 'SUBMATH'
                             continue
                         
-                        if subject == 'ICT':
+                        if subject.strip().upper() == 'ICT':
                             
                             if student_index.empty:
                                 new_row = {
@@ -189,50 +189,50 @@ def  merge_subjects(parsed_subjects, combined_data_frames, apd=''):
                                 'Name': row['Name'],
                             }
                             
-                            for subject_num in range(1, 4):
+                            new_row.update({
+                                f'Subject 1': subject,
+                                f'Subject 1 Comment': row['Comments'],
+                                f'Subject 1 First Paper': cols[0],
+                                f'Subject 1 First Paper Marks': row[f'{cols[0]}'],
+                                f'Subject 1 First Paper Grade': row[f'{cols[0]} Grade'],
+                            })
+                            
+                            if len(cols) > 1:
+                                
                                 new_row.update({
-                                    f'Subject {subject_num}': subject,
-                                    f'Subject {subject_num} Comment': row['Comments'],
-                                    f'Subject {subject_num} First Paper': cols[0],
-                                    f'Subject {subject_num} First Paper Marks': row[f'{cols[0]}'],
-                                    f'Subject {subject_num} First Paper Grade': row[f'{cols[0]} Grade'],
+                                    f'Subject 1 Second Paper': cols[1],
+                                    f'Subject 1 Second Paper Marks': row[f'{cols[1]}'],
+                                    f'Subject 1 Second Paper Grade': row[f'{cols[1]} Grade']
                                 })
-                                if len(cols) > 1:
-                                    
-                                    new_row.update({
-                                        f'Subject {subject_num} Second Paper': cols[1],
-                                        f'Subject {subject_num} Second Paper Marks': row[f'{cols[1]}'],
-                                        f'Subject {subject_num} Second Paper Grade': row[f'{cols[1]} Grade']
-                                    })
-                                if  len(cols) > 2:
-                                    new_row.update({
-                                        f'Subject {subject_num} Second Paper': cols[2],
-                                        f'Subject {subject_num} Second Paper Marks': row[f'{cols[2]}'],
-                                        f'Subject {subject_num} Second Paper Grade': row[f'{cols[2]} Grade']
-                                    })
-                                
-                                if  len(cols) > 3:
-                                    new_row.update({
-                                        f'Subject {subject_num} Second Paper': cols[3],
-                                        f'Subject {subject_num} Second Paper Marks': row[f'{cols[3]}'],
-                                        f'Subject {subject_num} Second Paper Grade': row[f'{cols[3]} Grade']
-                                    })
-                                
-                                new_row.update({f'Subject {subject_num} Grade': row[f'Subject Grade']})
-                                break
-                            combined_data_frames[class_name] = pd.concat([combined_data_frames[class_name], pd.DataFrame([new_row])], ignore_index=True)
+                            if  len(cols) > 2:
+                                new_row.update({
+                                    f'Subject 1 Third Paper': cols[2],
+                                    f'Subject 1 Third Paper Marks': row[f'{cols[2]}'],
+                                    f'Subject 1 Third Paper Grade': row[f'{cols[2]} Grade']
+                                })
+                            
+                            if  len(cols) > 3:
+                                new_row.update({
+                                    f'Subject 1 Fourth Paper': cols[3],
+                                    f'Subject 1 Fourth Paper Marks': row[f'{cols[3]}'],
+                                    f'Subject 1 Fourth Paper Grade': row[f'{cols[3]} Grade']
+                                })
+                            
+                            new_row.update({f'Subject {subject_num} Grade': row[f'Subject Grade']})
+                            
+                            s_pd = pd.DataFrame([new_row])
+                            
+                            combined_data_frames[class_name] = pd.concat([combined_data_frames[class_name], s_pd], ignore_index=True)
                         else:
                             
                             for subject_num in range(1, 4):
-                                
-                                
                                 if pd.isna(combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Grade']).all():
                                     combined_data_frames[class_name].loc[student_index, f'Subject {subject_num}'] = subject
                                     combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Comment'] = row['Comments']
-                                    if len(cols) == 1:
-                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper'] = cols[0]
-                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper Marks'] = row[f'{cols[0]}']
-                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper Grade'] = row[f'{cols[0]} Grade']
+                                    
+                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper'] = cols[0]
+                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper Marks'] = row[f'{cols[0]}']
+                                    combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} First Paper Grade'] = row[f'{cols[0]} Grade']
                                     if len(cols) >1:
                                         combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Second Paper'] = cols[1]
                                         combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Second Paper Marks'] = row[f'{cols[1]}']
@@ -242,14 +242,15 @@ def  merge_subjects(parsed_subjects, combined_data_frames, apd=''):
                                         combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Third Paper Marks'] = row[f'{cols[2]}']
                                         combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Third Paper Grade'] = row[f'{cols[2]} Grade']
                                     if len(cols) > 3:
-                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Third Paper'] = cols[3]
-                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Third Paper Marks'] = row[f'{cols[3]}']
-                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Third Paper Grade'] = row[f'{cols[0]} Grade']
+                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Fourth Paper'] = cols[3]
+                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Fourth Paper Marks'] = row[f'{cols[3]}']
+                                        combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Fourth Paper Grade'] = row[f'{cols[0]} Grade']
                                         
                                     combined_data_frames[class_name].loc[student_index, f'Subject {subject_num} Grade'] = row['Subject Grade']
                                     break
+                
             except Exception as e:
-                print(e)                 
+                pass                 
         
     for class_name, df in combined_data_frames.items():
         combined_data_frames[class_name]['Total Points'] = df.apply(
@@ -309,9 +310,10 @@ def combine_subjects_to_report_format(parsed_subjects, output_folder='', report_
     
     if report_type =='END_OF_TERM_REPORT' or report_type == 'MARKS_SUMMARY_REPORT':
         try:
+            
             merge_subjects(parsed_subjects=parsed_subjects, combined_data_frames=combined_data_frames_end_of_term)
         except Exception as e:
-            print(combined_data_frames_end_of_term)
+            
             with pd.ExcelWriter(os.path.join(output_folder, 'Errored_end_of_term_output.xlsx')) as writer:
                 for class_name, dataframe in combined_data_frames_end_of_term.items():
                     dataframe.to_excel(writer, sheet_name=class_name, index=False)
@@ -323,7 +325,7 @@ def combine_subjects_to_report_format(parsed_subjects, output_folder='', report_
         try: 
             merge_subjects(parsed_subjects=parsed_subjects, combined_data_frames=combined_data_frames_mid_term, apd='Mid ')
         except Exception as e:
-            print(combined_data_frames_mid_term)
+            
             with pd.ExcelWriter(os.path.join(output_folder, 'Errored_mid_term_output.xlsx')) as writer:
                 for class_name, dataframe in combined_data_frames_mid_term.items():
                     dataframe.to_excel(writer, sheet_name=class_name, index=False)
@@ -370,8 +372,8 @@ def parse_advanced_level_marksheet(folder_path:str, report_type='END_OF_TERM_REP
 
 
 if __name__ == '__main__':
-    parsed_subjects = grading_advanced_level('./test_subjects/Marks Sheet Term II 2024/A level Marks Sheet Term II 2024')
-    (end_of_term, mid_term) = combine_subjects_to_report_format(parsed_subjects=parsed_subjects)
+    parsed_subjects = grading_advanced_level('./Marks Sheet Term II 2024/A level Marks Sheet Term II 2024')
+    (end_of_term, mid_term) = combine_subjects_to_report_format(parsed_subjects=parsed_subjects,report_type='END_OF_TERM_REPORT')
     # report_type='MID_TERM_REPORT'
     # with pd.ExcelWriter('combined_data_frames_a_level.xlsx') as writer:
     #     for class_name, df in end_of_term.items():

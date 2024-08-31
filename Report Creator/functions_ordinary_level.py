@@ -158,7 +158,7 @@ def grading_ordinary_level(folder_path: str):
                         new_df.at[i, 'Average Score'] = fs if np.isnan(fs) else round(fs)
                         new_df.at[i, 'Average Grade'] = average_grade
                         new_df.at[i, 'Formative Score'] = fs if np.isnan(fs) else (round(fs) * 0.2)
-                        new_df.at[i, 'EOT Score'] = convert_to_percentage(row['EOT'], total_eot) if not pd.isnull(row['EOT']) else np.nan
+                        new_df.at[i, 'EOT Score'] = es if not pd.isnull(row['EOT']) else np.nan
                         new_df.at[i, 'Total Score'] = to
                         new_df.at[i, 'Grade'] = grade
                     

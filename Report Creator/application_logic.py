@@ -30,8 +30,11 @@ def run_mail_merge(data_frame, template_path, output_path, class_name, academic_
         if 'Name' not in record and 'name' not in record:
             raise KeyError("'Name' field is missing in the record.")
         
-        document = MailMerge(template_path)
         
+        document = MailMerge(template_path)
+        if(class_name == 'S.5'):
+            print(document.get_merge_fields())
+            print(record)
         document.merge(**record)
         if 'Name' in record:
             output_file = os.path.join(n_path, f'Report Card {record["Name"]}.docx')
