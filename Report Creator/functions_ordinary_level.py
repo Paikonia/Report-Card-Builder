@@ -129,6 +129,7 @@ def grading_ordinary_level(folder_path: str):
                         df['A01'] = df['A01'].apply(lambda x: convert_to_percentage(x, total_a01))
                         df['A02'] = df['A02'].apply(lambda x: convert_to_percentage(x, total_a02))
                         df['A03'] = df['A03'].apply(lambda x: convert_to_percentage(x, total_a03))
+                        df['EOT'] = df['EOT'].apply(lambda c: convert_to_percentage(c,total_eot))
                     except Exception as e:
                         raise Exception(f'An error "{str(e)}" occurred when processing:\nSubject {subject_name}, class {sheet_name}')
                     

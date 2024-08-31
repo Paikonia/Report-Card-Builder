@@ -32,9 +32,8 @@ def run_mail_merge(data_frame, template_path, output_path, class_name, academic_
         
         
         document = MailMerge(template_path)
-        if(class_name == 'S.5'):
-            print(document.get_merge_fields())
-            print(record)
+            
+            
         document.merge(**record)
         if 'Name' in record:
             output_file = os.path.join(n_path, f'Report Card {record["Name"]}.docx')
@@ -201,7 +200,6 @@ def make_reports(unprocessed_marks_o_level, unprocessed_marks_a_level, template_
 
     
 if __name__ == '__main__':
-    # make_reports('./test_subjects/Marks Sheet Term II 2024/O level Marks Sheet Term II 2024', './test_subjects/Marks Sheet Term II 2024/A level Marks Sheet Term II 2024', './test_subjects/templates', 'test_subjects/Reports', '1', '2019', 'MID_TERM_REPORT')
-    make_reports('./test_subjects/Marksheet Term One 2024', './test_subjects/Marksheet Term One 2024', './test_subjects/templates', 'test_subjects/Reports', '1', '2019', 'MARKS_SUMMARY_REPORT')
+    make_reports('./Marks Sheet Term II 2024/O level Marks Sheet Term II 2024', './Marks Sheet Term II 2024/A level Marks Sheet Term II 2024', './Marks Sheet Term II 2024/templates', 'Marks Sheet Term II 2024/reports', 'TERM II', '2024', 'END_OF_TERM_REPORT')
     
     
